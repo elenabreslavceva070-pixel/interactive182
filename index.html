@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Бухгалтерский тренажер | Продажи с возвратами</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #eef2f5;
+      font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Roboto', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .trainer {
+      max-width: 1400px;
+      width: 100%;
+      background: white;
+      border-radius: 2rem;
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.01);
+      padding: 2rem 1.8rem 2.2rem;
+      transition: all 0.2s ease;
+    }
+
+    .header-with-hint {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .example-title {
+      font-size: 1.5rem;
+      font-weight: 500;
+      letter-spacing: -0.2px;
+      color: #1a2c3e;
+      margin: 0;
+    }
+
+    .task-conditions {
+      background: #f9fafc;
+      border-radius: 1.2rem;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 2rem;
+      border: 1px solid #eef2f8;
+    }
+
+    .task-conditions p {
+      margin: 0.4rem 0;
+      font-size: 1rem;
+      color: #1f3a4b;
+      line-height: 1.4;
+    }
+
+    .task-conditions strong {
+      font-weight: 600;
+      color: #0b2b3b;
+    }
+
+    .hint-bulb {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .hint-bulb:hover {
+      transform: scale(1.1);
+    }
+
+    .bulb-icon {
+      width: 48px;
+      height: 48px;
+      background: #ffc107;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .bulb-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: #fff;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 2rem;
+      max-width: 95%;
+      width: 1100px;
+      max-height: 85vh;
+      overflow: auto;
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 0.8rem;
+    }
+
+    .modal-header h3 {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: #1a2c3e;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: #6c7f8f;
+    }
+
+    .hint-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .hint-table th, .hint-table td {
+      border: 1px solid #d1d9e6;
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .hint-table th {
+      background: #f0f6fe;
+    }
+
+    .journal-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 12px;
+      margin: 1.2rem 0 1rem;
+    }
+
+    .journal-table th {
+      text-align: left;
+      font-weight: 500;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #6c7f8f;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .journal-table td {
+      padding: 10px 8px 10px 0;
+      vertical-align: middle;
+      font-size: 0.9rem;
+    }
+
+    .entry-desc {
+      font-weight: 500;
+      color: #1f3e4c;
+    }
+
+    .account-select {
+      width: 100%;
+      min-width: 180px;
+      padding: 10px 12px;
+      font-family: 'Segoe UI', 'Inter', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: white;
+      border: 1.5px solid #95CAFA;
+      border-radius: 16px;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235f7f9e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 14px;
+    }
+
+    .sum-input {
+      width: 150px;
+      padding: 10px 12px;
+      font-family: 'SF Mono', 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: white;
+      border: 1.5px solid #95CAFA;
+      border-radius: 16px;
+      text-align: right;
+      outline: none;
+    }
+
+    .account-select.valid-green, .sum-input.valid-green {
+      background-color: #e1f7e8;
+      border-color: #2b8c5e;
+      color: #1a5a3e;
+    }
+
+    .account-select.invalid-red, .sum-input.invalid-red {
+      background-color: #ffe6e5;
+      border-color: #d9534f;
+      color: #a03430;
+    }
+
+    .check-btn {
+      background: white;
+      border: 1.5px solid #95CAFA;
+      padding: 12px 28px;
+      font-family: 'Segoe UI', 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #2c577c;
+      border-radius: 40px;
+      cursor: pointer;
+      margin-top: 20px;
+      width: fit-content;
+    }
+
+    .check-btn:hover {
+      background-color: #f1f7fe;
+      border-color: #7bb2e2;
+    }
+
+    .status-message {
+      font-size: 0.85rem;
+      margin-top: 1rem;
+      min-height: 2rem;
+    }
+
+    footer {
+      font-size: 0.7rem;
+      text-align: center;
+      margin-top: 1.8rem;
+      color: #9bb1c2;
+      border-top: 1px solid #eef2f8;
+      padding-top: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .trainer { padding: 1rem; }
+      .account-select, .sum-input { font-size: 0.7rem; padding: 6px; min-width: 140px; width: 140px; }
+      .entry-desc { font-size: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="trainer">
+  <div class="header-with-hint">
+    <div class="example-title">Как в учете отразить выручку с учетом предполагаемых затрат на возврат продукции</div>
+    <div class="hint-bulb" id="hintBulb">
+      <div class="bulb-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zM9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="task-conditions">
+    <p><strong>Ваша компания продает одежду через интернет-магазин с примеркой на дому. Продали 500 платьев по 5 000 руб. за штуку, получили от покупателей 2,5 млн руб. Себестоимость одного платья - 3 000 руб. При этом ожидается возврат 50 платьев. Средние затраты на обработку одного возврата - 500 руб. Срок возврата – 7 дней. Покупатели оплачивают товар сразу.</strong></p>
+  </div>
+
+  <table class="journal-table">
+    <thead>
+      <tr><th>Содержание операции</th><th>Дебет</th><th>Кредит</th><th>Сумма, руб.</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="entry-desc">Поступили деньги от покупателей</td>
+        <td><select class="account-select" id="debit1"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><select class="account-select" id="credit1"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><input type="text" class="sum-input" id="sum1" placeholder="Введите сумму"></td>
+      </tr>
+      <tr><td class="entry-desc">Сформировали обязательства по возвратам с учетом затрат</td>
+        <td><select class="account-select" id="debit2"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><select class="account-select" id="credit2"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><input type="text" class="sum-input" id="sum2" placeholder="Введите сумму"></td>
+      </tr>
+      <tr><td class="entry-desc">Оформили резерв на затраты логистики и обработки возвратов</td>
+        <td><select class="account-select" id="debit3"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><select class="account-select" id="credit3"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><input type="text" class="sum-input" id="sum3" placeholder="Введите сумму"></td>
+      </tr>
+      <tr><td class="entry-desc">Списали себестоимость ожидаемых возвратов</td>
+        <td><select class="account-select" id="debit4"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><select class="account-select" id="credit4"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><input type="text" class="sum-input" id="sum4" placeholder="Введите сумму"></td>
+      </tr>
+      <tr><td class="entry-desc">Вернули деньги покупателям за 50 платьев</td>
+        <td><select class="account-select" id="debit5"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><select class="account-select" id="credit5"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><input type="text" class="sum-input" id="sum5" placeholder="Введите сумму"></td>
+      </tr>
+      <tr><td class="entry-desc">Списали затраты на логистику</td>
+        <td><select class="account-select" id="debit6"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><select class="account-select" id="credit6"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><input type="text" class="sum-input" id="sum6" placeholder="Введите сумму"></td>
+      </tr>
+      <tr><td class="entry-desc">Приняли товары обратно в учет</td>
+        <td><select class="account-select" id="debit7"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><select class="account-select" id="credit7"><option value="" disabled selected>—</option><option value="51">51</option><option value="90.01">90.01</option><option value="76_обяз">76 «Обязательство по возвратам»</option><option value="76_право">76 «Право получения продукции…»</option><option value="96.09">96.09</option><option value="44">44</option><option value="41">41</option><option value="90.02">90.02</option></select></td>
+        <td><input type="text" class="sum-input" id="sum7" placeholder="Введите сумму"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div><button class="check-btn" id="checkBtn">Проверить</button></div>
+  <div class="status-message" id="statusMsg"></div>
+  <footer>Выберите счета и введите суммы цифрами без пробелов.</footer>
+</div>
+
+<!-- Модалка с правильными ответами -->
+<div id="hintModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Правильные ответы </h3>
+      <button class="close-modal" id="closeModalBtn">&times;</button>
+    </div>
+    <table class="hint-table">
+      <thead><tr><th>Содержание операции</th><th>Дебет</th><th>Кредит</th><th>Сумма, руб.</th></tr></thead>
+      <tbody>
+        <tr><td>Поступили деньги от покупателей</td><td>51</td><td>90.01</td><td>2 500 000</td></tr>
+        <tr><td>Сформировали обязательства по возвратам с учетом затрат</td><td>90.01</td><td>76 «Обязательство по возвратам»</td><td>225 000 (50 × 4 500)</td></tr>
+        <tr><td>Оформили резерв на затраты логистики и обработки возвратов</td><td>76 «Обязательство по возвратам»</td><td>96.09</td><td>25 000 (50 × 500)</td></tr>
+        <tr><td>Списали себестоимость ожидаемых возвратов</td><td>76 «Право получения продукции…»</td><td>90.02</td><td>150 000 (50 × 3 000)</td></tr>
+        <tr><td>Вернули деньги покупателям за 50 платьев</td><td>76 «Обязательство по возвратам»</td><td>51</td><td>225 000</td></tr>
+        <tr><td>Списали затраты на логистику</td><td>96.09</td><td>44</td><td>25 000</td></tr>
+        <tr><td>Приняли товары обратно в учет</td><td>41</td><td>76 «Право получения продукции…»</td><td>150 000</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const correctData = {
+    debit: {
+      1: "51", 2: "90.01", 3: "76_обяз", 4: "76_право", 5: "76_обяз", 6: "96.09", 7: "41"
+    },
+    credit: {
+      1: "90.01", 2: "76_обяз", 3: "96.09", 4: "90.02", 5: "51", 6: "44", 7: "76_право"
+    },
+    sum: {
+      1: 2500000, 2: 225000, 3: 25000, 4: 150000, 5: 225000, 6: 25000, 7: 150000
+    }
+  };
+
+  function checkAll() {
+    let allValid = true;
+    for (let i = 1; i <= 7; i++) {
+      const debitSel = document.getElementById(`debit${i}`);
+      const creditSel = document.getElementById(`credit${i}`);
+      const sumInp = document.getElementById(`sum${i}`);
+
+      const debitVal = debitSel.value;
+      const correctDebit = correctData.debit[i];
+      if (debitVal === correctDebit) {
+        debitSel.classList.add('valid-green');
+        debitSel.classList.remove('invalid-red');
+      } else {
+        debitSel.classList.add('invalid-red');
+        debitSel.classList.remove('valid-green');
+        allValid = false;
+      }
+
+      const creditVal = creditSel.value;
+      const correctCredit = correctData.credit[i];
+      if (creditVal === correctCredit) {
+        creditSel.classList.add('valid-green');
+        creditSel.classList.remove('invalid-red');
+      } else {
+        creditSel.classList.add('invalid-red');
+        creditSel.classList.remove('valid-green');
+        allValid = false;
+      }
+
+      let rawSum = sumInp.value.trim().replace(/\s/g, '');
+      let numSum = parseInt(rawSum, 10);
+      const correctSum = correctData.sum[i];
+      if (!isNaN(numSum) && numSum === correctSum) {
+        sumInp.classList.add('valid-green');
+        sumInp.classList.remove('invalid-red');
+      } else {
+        sumInp.classList.add('invalid-red');
+        sumInp.classList.remove('valid-green');
+        allValid = false;
+      }
+    }
+    const msgDiv = document.getElementById('statusMsg');
+    if (allValid) {
+      msgDiv.innerHTML = "✅ Все проводки и суммы верны. Отлично!";
+      msgDiv.style.color = "#2b8c5e";
+    } else {
+      msgDiv.innerHTML = "❌ Есть ошибки в проводках или суммах. Красным выделены неверные ячейки.";
+      msgDiv.style.color = "#c05a4a";
+    }
+  }
+
+  function bindReset() {
+    for (let i = 1; i <= 7; i++) {
+      const debitSel = document.getElementById(`debit${i}`);
+      const creditSel = document.getElementById(`credit${i}`);
+      const sumInp = document.getElementById(`sum${i}`);
+      if (debitSel) debitSel.addEventListener('change', () => {
+        debitSel.classList.remove('valid-green', 'invalid-red');
+        document.getElementById('statusMsg').innerHTML = "Нажмите «Проверить» для оценки.";
+      });
+      if (creditSel) creditSel.addEventListener('change', () => {
+        creditSel.classList.remove('valid-green', 'invalid-red');
+        document.getElementById('statusMsg').innerHTML = "Нажмите «Проверить» для оценки.";
+      });
+      if (sumInp) sumInp.addEventListener('input', () => {
+        sumInp.classList.remove('valid-green', 'invalid-red');
+        document.getElementById('statusMsg').innerHTML = "Нажмите «Проверить» для оценки.";
+      });
+    }
+  }
+
+  document.getElementById('checkBtn').addEventListener('click', checkAll);
+  bindReset();
+
+  const modal = document.getElementById('hintModal');
+  const bulb = document.getElementById('hintBulb');
+  const closeBtn = document.getElementById('closeModalBtn');
+  bulb.onclick = () => modal.classList.add('active');
+  closeBtn.onclick = () => modal.classList.remove('active');
+  modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+</script>
+</body>
+</html>
